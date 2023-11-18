@@ -1,0 +1,22 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <style>
+    p {
+      font-size: 20px;
+    }
+  </style>
+  <title>Email Verification</title>
+</head>
+
+<body>
+  <p>Email Verifikasi!</p>
+  <p>Halo, <%= data.full_name %>!</p>
+  <p>Kamu menerima email verifikasi untuk mengaktifkan akun kamu</p>
+  <p>Berikut adalah OTP untuk mengaktifkan akun kamu:</p>
+  <p><%= data.otp %></p>
+  <p">OTP ini akan valid selama <%= data.expiration_time %> menit.</p>
+</body>

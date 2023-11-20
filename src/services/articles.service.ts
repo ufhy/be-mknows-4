@@ -362,9 +362,9 @@ export class ArticleService {
       throw new HttpException(false, 400, "Article is not found");
     }
 
-    const findBookmark = DB.ArticlesBookmarks.findOne({ where: { article_id: article.pk, user_id } })
+    const findBookmark = await DB.ArticlesBookmarks.findOne({ where: { article_id: article.pk, user_id } })
     if (!findBookmark) {
-      await DB.ArticlesLikes.create({ article_id: article.pk, user_id });
+      await DB.ArticlesBookmarks.create({ article_id: article.pk, user_id });
       return true;
     }
 
@@ -377,7 +377,7 @@ export class ArticleService {
       throw new HttpException(false, 400, "Article is not found");
     }
 
-    const findBookmark = DB.ArticlesBookmarks.findOne({ where: { article_id: article.pk, user_id } })
+    const findBookmark = await DB.ArticlesBookmarks.findOne({ where: { article_id: article.pk, user_id } })
     if (findBookmark) {
       await DB.ArticlesBookmarks.destroy({ where: { article_id: article.pk, user_id }, force: true });
       return true;

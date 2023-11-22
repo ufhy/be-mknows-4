@@ -19,7 +19,6 @@ export class ArticleModel extends Model<Article, ArticleCreationAttributes> impl
   public title: string;
   public description: string;
   public content: string;
-  public viewed: number;
 
   public thumbnail_id: number;
   public author_id: number;
@@ -58,10 +57,6 @@ export default function (sequelize: Sequelize): typeof ArticleModel {
       content: {
         type: DataTypes.TEXT,
         allowNull: false,
-      },
-      viewed: {
-        type: DataTypes.INTEGER,
-        defaultValue: 0,
       },
       thumbnail_id: {
         type: DataTypes.INTEGER,

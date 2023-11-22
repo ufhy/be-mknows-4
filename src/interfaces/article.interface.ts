@@ -7,7 +7,6 @@ export interface Article {
   title: string;
   description: string;
   content: string;
-  viewed: number;
 
   thumbnail_id: number;
   author_id: number;
@@ -48,7 +47,6 @@ export interface ArticleParsed {
 
   categories: Category[];
   likes: number;
-  viewed: number;
 }
 
 export interface ArticleLike {
@@ -109,5 +107,10 @@ export interface ArticleCommentLike {
 
 export interface ArticleCommentReplyLike {
   reply_id: number;
+  user_id: number;
+}
+
+export interface ArticlePopular {
+  article_id: number;
   user_id: number;
 }

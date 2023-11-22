@@ -12,7 +12,7 @@ import { DataStoredInToken, RequestWithUser } from "@interfaces/authentication/t
 import { AuthService } from "@services/auth.service";
 import { getUserAgent } from "@utils/userAgent";
 
-const getAuthorization = (req: Request) => {
+export const getAuthorization = (req: Request) => {
   const coockie = req.cookies["Authorization"];
   if (coockie) return coockie;
 

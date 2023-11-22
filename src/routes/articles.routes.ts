@@ -20,6 +20,8 @@ export class ArticleRoute implements Routes {
   }
 
   private initializeRoutes() {
+    this.router.get(`/v1/${this.path}/bookmarks`, AuthMiddleware, this.article.getBookmarks);
+    this.router.get(`/v1/${this.path}/populars`, AuthMiddleware, this.article.getPopulars);
     this.router.get(`/v1/${this.path}/categories/:category_id`, this.article.getArticlesByCategory);
     this.router.get(`/v1/${this.path}`, this.article.getArticles);
     this.router.get(`/v1/${this.path}/:article_id`, this.article.getArticle);

@@ -27,7 +27,6 @@ export class ArticleService {
       },
       categories: article.categories.map((articleCategory) => articleCategory.category),
       likes: article.likes || 0,
-      viewed: article.viewed || 0,
     };
   }
 
@@ -107,10 +106,6 @@ export class ArticleService {
 
     const transformedArticles = articles.map(article => this.articleParsed(article));
     return { articles: transformedArticles, pagination };
-  }
-
-  public async incrementViewed(article_id: string): Promise<void> {
-    await DB.Articles.increment("viewed", { where: { uuid: article_id } });
   }
 
   public async getArticleById(article_id: string): Promise<ArticleParsed> {
@@ -356,6 +351,85 @@ export class ArticleService {
     }
   }
   
+  public async getBookmarks(user_id: number, query: ArticleQueryParams): Promise<{ articles: ArticleParsed[], pagination: Pagination }> {
+    const articleBookmarks = await DB.ArticlesBookmarks.findAll({ attributes: ["article_id"], where: { user_id } });
+    const articleIds = articleBookmarks.map(articleBookmark => articleBookmark.article_id);
+
+    const { page = "1", limit = "10", search, order, sort } = query;
+    const offset = (parseInt(page) - 1) * parseInt(limit);
+
+    const where = {pk: { [Op.in]: articleIds }};
+    if(search) {
+      where[Op.or] = [];
+
+      where[Op.or].push({
+        [Op.or]: [
+          {
+            title: {
+              [Op.iLike]: `%${search}%`,
+            },
+          },
+          {
+            description: {
+              [Op.iLike]: `%${search}%`,
+            },
+          },
+          {
+            content: {
+              [Op.iLike]: `%${search}%`,
+            },
+          },
+        ],
+      });
+
+      where[Op.or].push({
+        [Op.or]: [
+          {
+            "$author.full_name$": {
+              [Op.iLike]: `%${search}%`,
+            },
+          }
+        ],
+      });
+    }
+
+    const orderClause = [];
+    if (order && sort) {
+      if (sort === "asc" || sort === "desc") {
+        orderClause.push([order, sort]);
+      }
+    }
+
+    const { rows: articles, count } = await DB.Articles.findAndCountAll({ 
+      where,
+      limit: parseInt(limit),
+      offset,
+      order: orderClause
+    });
+
+    const likeCountPromises = articles.map(article => {
+      return DB.ArticlesLikes.count({
+        where: { article_id: article.pk }
+      });
+    });
+    
+    const likeCounts = await Promise.all(likeCountPromises);
+    
+    articles.forEach((article, index) => {
+      article.likes = likeCounts[index];
+    });
+
+    const pagination: Pagination = {
+      current_page: parseInt(page),
+      size_page: articles.length,
+      max_page: Math.ceil(count / parseInt(limit)),
+      total_data: count,
+    };
+
+    const transformedArticles = articles.map(article => this.articleParsed(article));
+    return { articles: transformedArticles, pagination };
+  }
+
   public async bookmarkAdd(user_id: number, article_id: string): Promise<boolean> {
     const article = await DB.Articles.findOne({ attributes: ["pk"], where: { uuid: article_id } });
     if (!article) {
@@ -380,6 +454,29 @@ export class ArticleService {
     const findBookmark = await DB.ArticlesBookmarks.findOne({ where: { article_id: article.pk, user_id } })
     if (findBookmark) {
       await DB.ArticlesBookmarks.destroy({ where: { article_id: article.pk, user_id }, force: true });
+      return true;
+    }
+
+    return false;
+  }
+
+  public async getPopulars() {
+    return []
+  }
+
+  public async popularAdd(article_id: string, user_id?: number): Promise<boolean> {
+    if (!user_id) {
+      return false
+    }
+
+    const article = await DB.Articles.findOne({ attributes: ["pk"], where: { uuid: article_id } });
+    if (!article) {
+      return false;
+    }
+
+    const findPopular = await DB.ArticlePopulars.findOne({ where: { article_id: article.pk, user_id } })
+    if (!findPopular) {
+      await DB.ArticlePopulars.create({ article_id: article.pk, user_id });
       return true;
     }
 
